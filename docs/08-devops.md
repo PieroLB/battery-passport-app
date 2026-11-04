@@ -16,7 +16,11 @@ infra/scripts/bootstrap-vps.md   infra/scripts/backup.sh (optionnel)
 - Multi-étapes (build puis runtime), **contexte = racine du repo** (le monorepo partage `packages/shared`).
 - Image de base Node LTS alpine, **même version que `.nvmrc`** ; corepack n'est plus livré avec Node 26 : `npm i -g pnpm@<version de packageManager>` (ADR 0003).
 - `pnpm install --frozen-lockfile` ; ne copier dans l'image finale que le nécessaire (`dist`, dépendances de production).
-  Vérifier le comportement de `pnpm deploy` selon la version de pnpm, sinon copier `dist` + `node_modules` de production.
+  API : `pnpm --filter @bp/api deploy --prod /out` (≈ 40 Mo de dépendances, image ≈ 300 Mo). Un `--filter --prod`
+  classique embarque tout le workspace (≈ 630 Mo). Quand l'API importera `@bp/shared`, il faudra compiler `shared`
+  en JS : Node ne retire pas les types des fichiers `.ts` situés dans `node_modules`.
+- Test local de la stack de prod : `.env.production` temporaire avec `DOMAIN=:80`, images taguées `local`, puis
+  `docker compose -p bp-local --env-file .env.production -f docker-compose.prod.yml up -d` (et `down -v` ensuite, en local uniquement).
 - Utilisateur **non-root**, `NODE_ENV=production`, `HEALTHCHECK` sur `/health` (api).
 - Web (ADR 0002) : étape de build Node → `nuxt generate` ; étape finale `FROM caddy:2` qui copie
   `.output/public` dans `/srv` et `infra/caddy/Caddyfile` dans `/etc/caddy/Caddyfile`. Pas de Node à l'exécution.

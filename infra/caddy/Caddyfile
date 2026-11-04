@@ -1,0 +1,14 @@
+# DOMAIN = public domain name (automatic HTTPS), or ":80" for a local HTTP-only test.
+{$DOMAIN} {
+	encode zstd gzip
+
+	handle_path /api/* {
+		reverse_proxy api:3000
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}
