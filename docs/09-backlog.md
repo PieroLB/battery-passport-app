@@ -16,7 +16,7 @@ Répartition indicative sur 2 jours : **jour 1 = M0 à M4**, **jour 2 = M5 à M8
 - ✅ test vitest sur `/health` ; démarre avec `pnpm --filter @bp/api dev`.
 
 **T-02 Squelette Web**
-- Nuxt 3 SPA, Tailwind, Pinia, page d'accueil qui appelle `/api/health` et affiche l'état.
+- Nuxt 4 SPA, Tailwind, Pinia, page d'accueil qui appelle `/api/health` et affiche l'état.
 - ✅ `pnpm --filter @bp/web build` OK.
 
 **T-03 Docker**

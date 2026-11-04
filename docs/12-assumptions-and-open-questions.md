@@ -4,7 +4,7 @@
 | # | Sujet | Hypothèse | Si faux |
 |---|---|---|---|
 | H1 | Stack back | Node LTS + TypeScript + Fastify | Adapter `docs/07` et les `CLAUDE.md` |
-| H2 | Stack front | Nuxt 3 (SPA) + Tailwind + Pinia | Adapter `docs/06`, `docs/07`, `apps/web/CLAUDE.md` |
+| H2 | Stack front | Nuxt 4 (SPA statique, ADR 0002) + Tailwind + Pinia | Adapter `docs/06`, `docs/07`, `apps/web/CLAUDE.md` |
 | H3 | Front | **Une seule appli** avec layouts par rôle (tablette/desktop/mobile), pas trois apps | Revoir `docs/06` et la structure |
 | H4 | Gestionnaire de paquets | pnpm workspaces (sans Turborepo/Nx) | Adapter scripts et Dockerfiles |
 | H5 | Hébergement du code et CI | GitHub + GitHub Actions + registre GHCR | Réécrire `docs/08` (GitLab CI, Docker Hub, etc.) |

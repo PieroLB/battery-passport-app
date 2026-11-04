@@ -4,15 +4,16 @@
 ```
 Navigateur (tablette / desktop / mobile)
         │ HTTPS
-   ┌────▼─────┐   /api/*   ┌─────────┐  bolt (réseau Docker interne)  ┌────────┐
-   │  Caddy   ├───────────►│   API   ├───────────────────────────────►│ Neo4j  │
-   │ (proxy)  │            │ Fastify │                                └────────┘
-   │          │   /*       └────┬────┘   volumes : archives, sauvegarde simulée
-   │          ├───────────►┌────▼────┐
-   └──────────┘            │   Web   │ (Nuxt, SPA servie par Node)
-                           └─────────┘
+   ┌────▼─────────┐  /api/*  ┌─────────┐  bolt (réseau Docker interne)  ┌────────┐
+   │ Caddy (image │─────────►│   API   ├───────────────────────────────►│ Neo4j  │
+   │  « web »)    │          │ Fastify │                                └────────┘
+   │ /* : fichiers│          └─────────┘   volumes : archives, sauvegarde simulée
+   │ statiques SPA│
+   └──────────────┘
 ```
 Un seul domaine : le front appelle `/api/...` (pas de CORS à gérer en production).
+Le front est une SPA générée en statique (`nuxt generate`) et **embarquée dans l'image Caddy** : pas de serveur
+Node pour le front (voir `docs/decisions/0002-nuxt4-static-front-in-caddy.md`).
 
 ## Structure du monorepo
 ```
@@ -24,13 +25,13 @@ Un seul domaine : le front appelle `/api/...` (pas de CORS à gérer en producti
 ├── .nvmrc                    # version Node (LTS)
 ├── .env.example
 ├── docker-compose.yml        # dev : neo4j (+ profil restore)
-├── docker-compose.prod.yml   # VPS : caddy, web, api, neo4j
+├── docker-compose.prod.yml   # VPS : web (Caddy + SPA), api, neo4j
 ├── apps/
 │   ├── api/                  # Fastify + TS
 │   │   └── src/{server.ts, config.ts, db/{driver.ts,migrations/,seed.ts}, modules/*, plugins/*}
-│   └── web/                  # Nuxt 3
-│       ├── nuxt.config.ts, app.vue
-│       └── {pages, layouts, components, composables, stores, middleware}
+│   └── web/                  # Nuxt 4 (sources dans app/)
+│       ├── nuxt.config.ts, Dockerfile (build Nuxt → image Caddy)
+│       └── app/{app.vue, pages, layouts, components, composables, stores, middleware}
 ├── packages/
 │   └── shared/               # types, zod schemas, STATUS_TRANSITIONS, constantes
 ├── infra/
@@ -49,7 +50,7 @@ Noms de paquets : `@bp/api`, `@bp/web`, `@bp/shared`.
 | Node | LTS (22 ou 24), épinglée dans `.nvmrc` et dans les Dockerfiles | |
 | API | Fastify, zod (`fastify-type-provider-zod` ou équivalent), `neo4j-driver` | |
 | Auth | JWT signé (`@fastify/jwt`), mots de passe hachés (argon2 ou bcrypt) | comptes seedés |
-| Front | Nuxt 3, Tailwind, Pinia, `html5-qrcode` | SPA |
+| Front | Nuxt 4 (SPA statique, `nuxt generate`), Tailwind, Pinia, `html5-qrcode` | SPA |
 | QR (génération) | lib `qrcode` côté API | PNG |
 | Tests | vitest (api, shared, composants), un test E2E de fumée (curl/script) sur le parcours global | |
 | Lint/format | ESLint + Prettier, TypeScript strict | |
@@ -72,7 +73,7 @@ Noms de paquets : `@bp/api`, `@bp/web`, `@bp/shared`.
 | `REUSE_MIN_SOH_PERCENT` | `70` | api |
 | `REUSE_MAX_RESISTANCE_FACTOR` | `1.0` | api |
 | `ARCHIVE_REQUIRES_OWNER_VALIDATION` | `true` | api |
-| `DOMAIN` | `bp.exemple.fr` | caddy (prod) |
+| `DOMAIN` | `bp.exemple.fr` | web = Caddy (prod) |
 | `GHCR_OWNER` | `mon-org` (minuscules) | compose prod |
 | `IMAGE_TAG` | `sha-abc1234` ou `latest` | compose prod |
 
