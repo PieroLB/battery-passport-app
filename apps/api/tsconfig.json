@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "erasableSyntaxOnly": true,
+    "rewriteRelativeImportExtensions": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src"]
+}
