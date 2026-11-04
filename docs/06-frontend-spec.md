@@ -1,6 +1,6 @@
 # 06 – Spécification front-end
 
-Nuxt 3 en SPA (`ssr: false`), TypeScript, Tailwind, Pinia. Interface en français. Une seule appli,
+Nuxt 4 en SPA (`ssr: false`, `nuxt generate`), TypeScript, Tailwind, Pinia. Interface en français. Une seule appli,
 des layouts selon le rôle, **responsive** : tablette (garagiste), desktop (propriétaire, conformité),
 mobile (centre de tri, recycleur).
 

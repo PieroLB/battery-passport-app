@@ -18,7 +18,8 @@ infra/scripts/bootstrap-vps.md   infra/scripts/backup.sh (optionnel)
 - `pnpm install --frozen-lockfile` ; ne copier dans l'image finale que le nécessaire (`dist`, dépendances de production).
   Vérifier le comportement de `pnpm deploy` selon la version de pnpm, sinon copier `dist` + `node_modules` de production.
 - Utilisateur **non-root**, `NODE_ENV=production`, `HEALTHCHECK` sur `/health` (api).
-- Web : build Nuxt en SPA, servi par le serveur Node de Nuxt (ou statique) ; écoute sur 3000.
+- Web (ADR 0002) : étape de build Node → `nuxt generate` ; étape finale `FROM caddy:2` qui copie
+  `.output/public` dans `/srv` et `infra/caddy/Caddyfile` dans `/etc/caddy/Caddyfile`. Pas de Node à l'exécution.
 - `.dockerignore` : `node_modules`, `.git`, `.env*`, `neo4j/dump`, `docs`, `dist`, `.nuxt`.
 
 ## `docker-compose.yml` (développement)
@@ -62,21 +63,16 @@ Seul `NEO4J_AUTH` (et les paramètres `NEO4J_server_*`) doivent y figurer.
 ## `docker-compose.prod.yml` (VPS)
 ```yaml
 services:
-  caddy:
-    image: caddy:2
+  web:                      # Caddy + SPA statique + Caddyfile, tout dans l'image (ADR 0002)
+    image: ghcr.io/${GHCR_OWNER}/battery-passport-web:${IMAGE_TAG:-latest}
     restart: unless-stopped
     ports: ["80:80", "443:443"]
     environment:
       DOMAIN: ${DOMAIN}
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
-    depends_on: [web, api]
-
-  web:
-    image: ghcr.io/${GHCR_OWNER}/battery-passport-web:${IMAGE_TAG:-latest}
-    restart: unless-stopped
+    depends_on: [api]
 
   api:
     image: ghcr.io/${GHCR_OWNER}/battery-passport-api:${IMAGE_TAG:-latest}
@@ -126,15 +122,18 @@ Remarque : la mémoire de Neo4j est bornée ici pour un petit VPS (≥ 2 Go de R
 ```
 {$DOMAIN} {
     encode zstd gzip
-    handle /api/* {
-        uri strip_prefix /api
+    handle_path /api/* {
         reverse_proxy api:3000
     }
     handle {
-        reverse_proxy web:3000
+        root * /srv
+        try_files {path} /index.html
+        file_server
     }
 }
 ```
+Le Caddyfile est **copié dans l'image web** au build : une modification du Caddyfile passe par une PR et un
+nouveau déploiement, comme le code. `try_files … /index.html` sert la SPA pour toutes les routes (`/p/BP-DEMO-001`…).
 HTTPS automatique (Let's Encrypt) si `DOMAIN` est un nom de domaine dont le DNS pointe vers le VPS. Sans domaine,
 utiliser `:80` en attendant (et accepter l'absence de HTTPS — la caméra du scanner QR exige HTTPS sur mobile,
 sauf `localhost` : **un domaine avec HTTPS est donc nécessaire pour la démo mobile**).
@@ -245,10 +244,9 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
           ssh-keyscan -p "${VPS_PORT:-22}" "$VPS_HOST" >> ~/.ssh/known_hosts   # idéal : épingler la clé d'hôte dans un secret
-      - name: Copy deploy files
+      - name: Copy compose file
         run: |
           scp -i ~/.ssh/id_deploy -P "${VPS_PORT:-22}" docker-compose.prod.yml "$VPS_USER@$VPS_HOST:/opt/battery-passport/"
-          scp -i ~/.ssh/id_deploy -P "${VPS_PORT:-22}" infra/caddy/Caddyfile "$VPS_USER@$VPS_HOST:/opt/battery-passport/Caddyfile"
       - name: Deploy
         run: |
           TAG="sha-${GITHUB_SHA::7}"

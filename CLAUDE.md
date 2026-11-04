@@ -16,7 +16,7 @@ indiquées **à la demande** (ne charge pas tout d'un coup).
 ## Stack (voir `docs/07-architecture.md`)
 - Monorepo **pnpm workspaces** : `apps/api`, `apps/web`, `packages/shared`, `infra/`, `docs/`.
 - API : Node (LTS) + TypeScript + Fastify + `neo4j-driver` + zod.
-- Front : Nuxt 3 (Vue 3, TypeScript, SPA) + Tailwind + Pinia. Interface en **français**.
+- Front : Nuxt 4 (Vue 3, TypeScript, SPA statique servie par Caddy) + Tailwind + Pinia. Interface en **français**.
 - Docker + docker compose. CI/CD GitHub Actions : sur `main`, build des images, push sur GHCR,
   déploiement SSH sur un VPS (voir `docs/08-devops.md`).
 
