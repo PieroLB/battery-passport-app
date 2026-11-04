@@ -14,7 +14,7 @@ infra/scripts/bootstrap-vps.md   infra/scripts/backup.sh (optionnel)
 
 ## Dockerfiles (exigences)
 - Multi-étapes (build puis runtime), **contexte = racine du repo** (le monorepo partage `packages/shared`).
-- Image de base Node LTS alpine, **même version que `.nvmrc`** ; `corepack enable` pour pnpm.
+- Image de base Node LTS alpine, **même version que `.nvmrc`** ; corepack n'est plus livré avec Node 26 : `npm i -g pnpm@<version de packageManager>` (ADR 0003).
 - `pnpm install --frozen-lockfile` ; ne copier dans l'image finale que le nécessaire (`dist`, dépendances de production).
   Vérifier le comportement de `pnpm deploy` selon la version de pnpm, sinon copier `dist` + `node_modules` de production.
 - Utilisateur **non-root**, `NODE_ENV=production`, `HEALTHCHECK` sur `/health` (api).

@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+**/.output
+**/.nuxt
+.git
+.github
+.env*
+neo4j/dump
+docs
+**/*.md

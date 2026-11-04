@@ -47,7 +47,7 @@ Noms de paquets : `@bp/api`, `@bp/web`, `@bp/shared`.
 | Sujet | Choix | Remarque |
 |---|---|---|
 | Gestionnaire de paquets | pnpm (workspaces) | épingler la version via `packageManager` dans `package.json` |
-| Node | LTS (22 ou 24), épinglée dans `.nvmrc` et dans les Dockerfiles | |
+| Node | 26 (LTS), épinglée dans `.nvmrc` et dans les Dockerfiles | ADR 0003 |
 | API | Fastify, zod (`fastify-type-provider-zod` ou équivalent), `neo4j-driver` | |
 | Auth | JWT signé (`@fastify/jwt`), mots de passe hachés (argon2 ou bcrypt) | comptes seedés |
 | Front | Nuxt 4 (SPA statique, `nuxt generate`), Tailwind, Pinia, `html5-qrcode` | SPA |
