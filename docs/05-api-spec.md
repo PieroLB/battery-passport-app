@@ -19,7 +19,8 @@ Codes : `VALIDATION_ERROR` (400), `UNAUTHENTICATED` (401), `FORBIDDEN_ROLE` (403
 - Validation : zod sur toutes les entrées/sorties ; schémas partagés dans `packages/shared`.
 
 ## Santé
-`GET /health` → `200 {"status":"ok","neo4j":"up"}` (utilisé par Docker et le déploiement).
+`GET /health` → `200 {"status":"ok","neo4j":"up"}`, ou `503 {"status":"degraded","neo4j":"down"}` si Neo4j est
+injoignable (utilisé par Docker et le déploiement ; route publique).
 
 ## Authentification
 - `POST /auth/login` `{username, password}` → `{token, user:{id, displayName, role, organization}}`
