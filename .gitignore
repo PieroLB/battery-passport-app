@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.output/
+.nuxt/
+.data/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+neo4j/dump/*
+!neo4j/dump/.gitkeep
