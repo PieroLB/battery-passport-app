@@ -21,4 +21,4 @@ avec `.output/public` dans `/srv` et `infra/caddy/Caddyfile`. Ce conteneur est a
   (raison du rejet de l'option 2, où les fichiers statiques ne suivraient pas le tag).
 - Toujours deux images (api, web) dans la CI.
 - Nuxt 4 : sources du front dans `apps/web/app/`.
-- En dev, `/api` est redirigé vers l'API locale par le proxy Vite.
+- En dev, `/api` est redirigé vers l'API locale par `nitro.devProxy` (préfixe retiré).
