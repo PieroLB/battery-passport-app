@@ -9,7 +9,6 @@ Proof of concept d'un Digital Battery Passport. Défi traité : **n°6 – archi
 cp .env.example .env            # puis renseigner les valeurs
 pnpm install
 docker compose up -d neo4j
-docker compose --profile restore run --rm neo4j-restore   # une seule fois, restaure le dump fourni
 pnpm --filter @bp/api seed
 pnpm dev
 ```

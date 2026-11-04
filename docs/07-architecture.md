@@ -24,7 +24,7 @@ Node pour le front (voir `docs/decisions/0002-nuxt4-static-front-in-caddy.md`).
 ├── pnpm-workspace.yaml
 ├── .nvmrc                    # version Node (LTS)
 ├── .env.example
-├── docker-compose.yml        # dev : neo4j (+ profil restore)
+├── docker-compose.yml        # dev : neo4j
 ├── docker-compose.prod.yml   # VPS : web (Caddy + SPA), api, neo4j
 ├── apps/
 │   ├── api/                  # Fastify + TS
@@ -37,7 +37,6 @@ Node pour le front (voir `docs/decisions/0002-nuxt4-static-front-in-caddy.md`).
 ├── infra/
 │   ├── caddy/Caddyfile
 │   └── scripts/              # scripts utilitaires (bootstrap VPS, backup)
-├── neo4j/dump/               # dump fourni (voir .gitignore si trop volumineux)
 ├── docs/
 └── .github/workflows/{ci.yml,deploy.yml}
 ```

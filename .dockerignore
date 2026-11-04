@@ -5,6 +5,5 @@
 .git
 .github
 .env*
-neo4j/dump
 docs
 **/*.md

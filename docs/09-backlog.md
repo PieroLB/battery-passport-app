@@ -32,13 +32,14 @@ Répartition indicative sur 2 jours : **jour 1 = M0 à M4**, **jour 2 = M5 à M8
 - ✅ un merge sur `main` met en ligne l'appli ; `https://<domaine>/api/health` répond `ok` ; le retour arrière a été testé une fois.
 
 ## M1 – Données
-**T-10 Neo4j et dump** : service Neo4j, restauration du dump, **inspection du schéma réel**, ADR `0001-schema-dump.md`.
-- ✅ `docs/04-data-model-neo4j.md` mis à jour avec les noms réels.
+**T-10 Schéma Neo4j** : aucun dump fourni (ADR `0001-no-dump-own-schema.md`) ; `docs/04` devient la référence,
+  alignée sur la figure 1 du sujet et la liste d'attributs Battery Pass.
+- ✅ `docs/04-data-model-neo4j.md` à jour ; plus aucune référence à un dump.
 
 **T-11 Driver et migrations** : driver partagé, runner de migrations idempotent, contraintes et index.
 - ✅ relancer les migrations ne produit aucune erreur ni doublon.
 
-**T-12 Seed** : utilisateurs (5 rôles), modules, batteries `BP-DEMO-001..007`, archives de démo (voir `docs/01-product-spec.md`).
+**T-12 Seed** : graphe complet (`Company`, `Type`, `Model` et nœuds statiques, `EconomicOperator`), utilisateurs (5 rôles), modules, batteries `BP-DEMO-001..007`, archives de démo (voir `docs/01-product-spec.md`).
 - ✅ seed **idempotent** ; mots de passe issus de `SEED_DEFAULT_PASSWORD` ; hachés en base.
 
 ## M2 – Authentification

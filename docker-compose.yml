@@ -1,7 +1,7 @@
 # Development: Neo4j only (api and web run with `pnpm dev`).
 services:
   neo4j:
-    image: neo4j:${NEO4J_IMAGE_TAG:-5-community} # same major version as the dump
+    image: neo4j:${NEO4J_IMAGE_TAG:-5-community} # Neo4j 5 LTS
     ports: ['127.0.0.1:7474:7474', '127.0.0.1:7687:7687']
     environment:
       NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-devpassword}
@@ -11,22 +11,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-
-  neo4j-restore: # one-shot restore of neo4j/dump/neo4j.dump (see docs/08-devops.md)
-    image: neo4j:${NEO4J_IMAGE_TAG:-5-community}
-    profiles: [restore]
-    volumes:
-      - neo4j_data:/data
-      - ./neo4j/dump:/dump:ro
-    entrypoint:
-      [
-        'neo4j-admin',
-        'database',
-        'load',
-        'neo4j',
-        '--from-path=/dump',
-        '--overwrite-destination=true',
-      ]
 
 volumes:
   neo4j_data:

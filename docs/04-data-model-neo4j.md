@@ -1,49 +1,61 @@
 # 04 – Modèle de données Neo4j
 
 ## Règle d'or
-Le dump fourni fait foi pour le **schéma existant**. Avant tout code, l'agent doit l'inspecter :
-```cypher
-CALL db.schema.visualization();
-CALL db.labels();
-CALL db.relationshipTypes();
-CALL db.propertyKeys();
-MATCH (n) RETURN labels(n) AS labels, count(*) AS n ORDER BY n DESC;
-```
-Puis consigner les écarts avec ce document dans `docs/decisions/0001-schema-dump.md`.
+**Aucun dump n'a été fourni** (ADR 0001). Ce document est **la référence du schéma** : le modèle de base reprend
+la figure 1 du sujet (noms, sens des relations, types), les extensions ci-dessous sont les nôtres. Toute modification
+passe par une migration (`apps/api/src/db/migrations/`) et une mise à jour de ce document.
 
-## Modèle existant (d'après la figure 1 du sujet – à vérifier contre le dump)
-Nœuds et propriétés principales (les noms exacts peuvent différer) :
-| Label | Propriétés (indicatif) |
-|---|---|
-| `Company` | `name` |
-| `Type` | `name` |
-| `Model` | `modelId`, `name` |
-| `EconomicOperator` | `name`, `address`, `country`, `email`, `phone`, `website` |
-| `Certification` | `separateCollectionSymbol`, `EUDeclarationOfConformity`, `EUDeclarationOfConformityId` |
-| `Circularity` | `extinguishAgent`, `partNumbers` |
-| `StaticPerformance` | `minimalVoltage`, `nominalVoltage`, `maximalVoltage` |
-| `StaticDurability` | `expectedBatteryLifetimeCycles`, `cRateRelevantCycleLifeTest` |
-| `CarbonFootprint` | `carbonFootprintDeclared`, `performanceClass`, `lifeStudy` |
-| `Composition` | `composition_id`, `batteryChemistry` |
-| `Anode`, `Cathode`, `Electrolyte` | identifiant, liste de matériaux, pourcentages, `isRenewable` |
-| `BatteryInstance` | `batteryId`, `batteryPassportId`, `status` |
-| `DynamicDurability` | `warranty`, `accidents` |
-| `DynamicPerformance` | `soce`, `soc` (indicatif) |
+Sources (non versionnées, voir `docs/sources/` en local) : sujet du hackathon (figure 1, p. 5) et liste d'attributs
+Battery Pass `2023_Battery_Passport_Data_Attributes.xlsx` (longlist v1.2, colonne « # »).
 
-Relations (indicatif) :
+## Modèle de base (figure 1 du sujet)
+Les `<id> int` de la figure sont les identifiants internes Neo4j : on ne s'en sert **jamais** comme identifiant
+métier (on utilise `batteryPassportId`, `modelId`, etc.).
+
+| Label | Propriétés (type) | Attribut Battery Pass (#) |
+|---|---|---|
+| `Company` | `name` (string) | 4 fabricant |
+| `Type` | `name` (string) | 9 catégorie de batterie |
+| `Model` | `modelId` (string), `name` (string) | – |
+| `EconomicOperator` | `name`, `address`, `country`, `email`, `phone`, `weblink` (string) | 3 opérateur |
+| `Certification` | `separateCollectionSymbol` (string : référence d'image + texte), `EUDeclarationOfConformity` (string : référence PDF), `EUDeclarationOfConformityId` (string) | 12, 17 |
+| `Circularity` | `extinguishAgent` (string), `partNumbers` (string, URL) | 15, 37 |
+| `StaticPerformance` | `minimalVoltage`, `nominalVoltage`, `maximalVoltage` (float, V) | 59–61 |
+| `StaticDurability` | `expectedBatteryLifetimeCycles` (int), `cRateRelevantCycleLifeTest` (float, A/Ah) | 77, 80 |
+| `CarbonFootprint` | `carbonFootprintDeclared` (float, kg CO2e/kWh), `performanceClass` (string), `linkStudy` (string, URL) | 19, 24, 25 |
+| `Composition` | `composition_id` (string), `batteryChemistry` (string) | 31 |
+| `Anode` | `anodeId` (string, unique), `anodeMaterialsList` (string[]), `percentageList` (int[]), `isRenewable` (boolean[]) | 33 |
+| `Cathode` | `cathodeId`, `cathodeMaterialsList`, `percentageList`, `isRenewable` (mêmes types) | 33 |
+| `Electrolyte` | `electrolyteId`, `electrolyteMaterialsList`, `percentageList`, `isRenewable` (mêmes types) | 33 |
+| `BatteryInstance` | `batteryId` (string), `batteryPassportId` (string), `status` (string) | 2, 1, 11 |
+| `DynamicDurability` | `warranty` (string, date `YYYY-MM`), `accidents` (string : référence de document) | 8, 93 |
+| `DynamicPerformance` | `soce` (int, %), `soc` (int, %) | 57, 58 |
+
+Les trois listes d'`Anode`/`Cathode`/`Electrolyte` sont **parallèles** (même index = même matériau).
+
+Relations (sens de la figure 1) :
 ```
-(Type)-[:HAS_TYPE]-(Company)            (Company)-[:HAS_ECONOMIC_OPERATOR]->(EconomicOperator)
-(Type)-[:HAS_MODEL]->(Model)
-(Model)-[:HAS_CERTIFICATION|HAS_CIRCULARITY|HAS_STATIC_PERFORMANCE|HAS_STATIC_DURABILITY|
-        HAS_COMPOSITION|HAS_CARBON_FOOTPRINT]->(...)
-(Composition)-[:HAS_ANODE|HAS_CATHODE|HAS_ELECTROLYTE]->(...)
+(Company)-[:HAS_TYPE]->(Type)-[:HAS_MODEL]->(Model)
+(Company)-[:HAS_ECONOMIC_OPERATOR]->(EconomicOperator)
+(Model)-[:HAS_CERTIFICATION]->(Certification)
+(Model)-[:HAS_CIRCULARITY]->(Circularity)
+(Model)-[:HAS_STATIC_PERFORMANCE]->(StaticPerformance)
+(Model)-[:HAS_STATIC_DURABILITY]->(StaticDurability)
+(Model)-[:HAS_COMPOSITION]->(Composition)
+(Model)-[:HAS_CARBON_FOOTPRINT]->(CarbonFootprint)
+(EconomicOperator)-[:HAS_CARBON_FOOTPRINT]->(CarbonFootprint)
+(Composition)-[:HAS_ANODE]->(Anode)
+(Composition)-[:HAS_CATHODE]->(Cathode)
+(Composition)-[:HAS_ELECTROLYTE]->(Electrolyte)
 (Model)-[:HAS_BATTERY_INSTANCE]->(BatteryInstance)
 (EconomicOperator)-[:BUILD]->(BatteryInstance)
-(EconomicOperator)-[:HAS_CARBON_FOOTPRINT]->(CarbonFootprint)
 (BatteryInstance)-[:HAS_DYNAMIC_DURABILITY]->(DynamicDurability)
 (BatteryInstance)-[:HAS_DYNAMIC_PERFORMANCE]->(DynamicPerformance)
 ```
-Sens et noms exacts : à confirmer dans le dump.
+
+Le défi 1 parle de **5 modules** par batterie avec une résistance interne maximale définie par le constructeur
+(attribut Battery Pass #74, « initial internal resistance », niveau module facultatif) : la figure 1 ne les
+modélise pas, d'où le nœud `Module` ajouté ci-dessous.
 
 ## Extensions à ajouter (migrations)
 Stocker les migrations dans `apps/api/src/db/migrations/` (fichiers Cypher numérotés, rejouables,
@@ -108,7 +120,7 @@ Les champs JSON (`diagnostic`, `snapshot`) sont stockés **en chaîne JSON** (Ne
 (AccessLog)-[:ON]->(ArchiveRecord)
 ```
 
-## Requêtes de référence (esquisses, à adapter au dump)
+## Requêtes de référence (esquisses)
 
 ### Archivage (Prepare for Archive, étape de validation)
 ```cypher
@@ -167,4 +179,5 @@ RETURN b.batteryPassportId AS id, a.id AS archiveId, a.retainUntil AS retainUnti
 
 ## Seed
 Script idempotent (`MERGE`) `apps/api/src/db/seed.ts` : utilisateurs, modules, batteries de démo
-(voir `docs/01-product-spec.md`), archives de démo. Il s'attache aux `Model`/`EconomicOperator` **existants** du dump.
+(voir `docs/01-product-spec.md`), archives de démo. Il crée aussi **tout le modèle de base** (`Company`, `Type`, `Model`
+et ses nœuds statiques, `EconomicOperator`) avec des valeurs plausibles, documentées comme fictives.

@@ -24,13 +24,13 @@ infra/scripts/bootstrap-vps.md   infra/scripts/backup.sh (optionnel)
 - Utilisateur **non-root**, `NODE_ENV=production`, `HEALTHCHECK` sur `/health` (api).
 - Web (ADR 0002) : étape de build Node → `nuxt generate` ; étape finale `FROM caddy:2` qui copie
   `.output/public` dans `/srv` et `infra/caddy/Caddyfile` dans `/etc/caddy/Caddyfile`. Pas de Node à l'exécution.
-- `.dockerignore` : `node_modules`, `.git`, `.env*`, `neo4j/dump`, `docs`, `dist`, `.nuxt`.
+- `.dockerignore` : `node_modules`, `.git`, `.env*`, `docs`, `dist`, `.nuxt`.
 
 ## `docker-compose.yml` (développement)
 ```yaml
 services:
   neo4j:
-    image: neo4j:${NEO4J_IMAGE_TAG:-5-community}      # même version majeure que le dump
+    image: neo4j:${NEO4J_IMAGE_TAG:-5-community}      # Neo4j 5 LTS
     ports: ["127.0.0.1:7474:7474", "127.0.0.1:7687:7687"]
     environment:
       NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-devpassword}
@@ -41,28 +41,12 @@ services:
       timeout: 5s
       retries: 12
 
-  neo4j-restore:            # restauration ponctuelle du dump fourni (voir procédure)
-    image: neo4j:${NEO4J_IMAGE_TAG:-5-community}
-    profiles: [restore]
-    volumes:
-      - neo4j_data:/data
-      - ./neo4j/dump:/dump:ro
-    entrypoint: ["neo4j-admin","database","load","neo4j","--from-path=/dump","--overwrite-destination=true"]
-
 volumes:
   neo4j_data:
 ```
 **Important** : ne pas passer `NEO4J_PASSWORD`, `NEO4J_USER` ou `NEO4J_URI` en variables d'environnement au conteneur
 Neo4j : l'image convertit les variables `NEO4J_*` en paramètres de configuration et peut refuser les clés inconnues.
 Seul `NEO4J_AUTH` (et les paramètres `NEO4J_server_*`) doivent y figurer.
-
-### Restaurer le dump (dev)
-1. Placer le dump dans `neo4j/dump/` et le **renommer `neo4j.dump`** (le nom doit être `<nom-de-base>.dump`).
-2. `docker compose stop neo4j` (la base doit être arrêtée), puis
-   `docker compose --profile restore run --rm neo4j-restore`, puis `docker compose up -d neo4j`.
-3. Vérifier la version : si le dump vient d'une version différente de Neo4j (ex. 4.4 vers 5), la restauration peut
-   exiger une **migration de format** (`neo4j-admin database migrate`). Aligner `NEO4J_IMAGE_TAG` sur la version du dump
-   ou consigner la procédure dans `docs/decisions/`.
 
 ## `docker-compose.prod.yml` (VPS)
 ```yaml
@@ -106,12 +90,6 @@ services:
       timeout: 5s
       retries: 12
     # AUCUN port publié : Neo4j reste sur le réseau Docker interne.
-
-  neo4j-restore:
-    image: neo4j:${NEO4J_IMAGE_TAG:-5-community}
-    profiles: [restore]
-    volumes: [neo4j_data:/data, ./neo4j/dump:/dump:ro]
-    entrypoint: ["neo4j-admin","database","load","neo4j","--from-path=/dump","--overwrite-destination=true"]
 
 volumes:
   caddy_data:
@@ -302,9 +280,7 @@ dans GitHub : les secrets applicatifs vivent dans `/opt/battery-passport/.env.pr
 6. Créer `/opt/battery-passport/.env.production` (`chmod 600`) avec : `DOMAIN`, `NEO4J_PASSWORD`, `JWT_SECRET`,
    `PUBLIC_BASE_URL`, `SEED_DEFAULT_PASSWORD`, `ARCHIVE_DIR=/data/archives`, `ARCHIVE_BACKUP_DIR=/data/backup`,
    `GHCR_OWNER`, seuils (voir `docs/07-architecture.md`).
-7. Copier le dump dans `/opt/battery-passport/neo4j/dump/neo4j.dump`, puis (Neo4j arrêté) :
-   `docker compose --env-file .env.production -f docker-compose.prod.yml --profile restore run --rm neo4j-restore`.
-8. Premier déploiement via un merge sur `main`. Puis lancer le seed **une fois** :
+7. Premier déploiement via un merge sur `main`. Puis lancer le seed **une fois** :
    `docker compose --env-file .env.production -f docker-compose.prod.yml exec api node dist/db/seed.js`
    (adapter le chemin au build réel).
 

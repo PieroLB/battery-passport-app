@@ -21,7 +21,7 @@
 - PR décrite.
 
 ## Quand poser une question (et ne pas deviner)
-- Écart entre le dump réel et la doc de données.
+- Besoin de modifier le schéma de `docs/04` (nouveau label, propriété ou relation).
 - Règle métier absente de `docs/` ou contradictoire.
 - Choix qui engage l'architecture, la sécurité, la facture (service tiers payant) ou la conformité.
 - Toute action sur le VPS, les secrets GitHub ou la production.
@@ -52,7 +52,7 @@ Ne touche ni au VPS ni aux secrets.
 ```
 
 ## Prompts types par jalon
-- **M1** : « Réalise T-10. Restaure le dump, inspecte le schéma réel, écris l'ADR 0001 et mets à jour docs/04. Ne code rien d'autre. »
+- **M1** : « Réalise T-11 puis T-12. Les migrations et le seed suivent docs/04 à la lettre. »
 - **M4** : « Réalise T-40 puis T-41. Les transitions viennent de packages/shared. Montre-moi les tests des règles avant le front. »
 - **M5/M6** : « Réalise T-50. Tout l'archivage doit tenir dans une seule transaction avec rollback testé. »
 - **M8** : « Réalise T-80 : rejoue le script de démo de docs/01 en test automatisé. »

@@ -8,5 +8,5 @@ coverage/
 .env
 .env.*
 !.env.example
-neo4j/dump/*
-!neo4j/dump/.gitkeep
+# Third-party source documents (not redistributable in a public repo)
+docs/sources/
