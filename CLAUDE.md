@@ -11,7 +11,7 @@ indiquées **à la demande** (ne charge pas tout d'un coup).
   le QR et constate que le statut est à jour.
 - **Défi choisi : n°6 – archivage des données en fin de vie** : cycle de vie du BP, règles
   d'archivage, cas d'usage `Prepare for Archive` et `Create New BP from Old`, traçabilité, RGPD.
-- Base de données : graphe **Neo4j** (un dump est fourni dans `neo4j/dump/`).
+- Base de données : graphe **Neo4j**. Aucun dump fourni : le schéma est le nôtre (`docs/04`, ADR 0001).
 
 ## Stack (voir `docs/07-architecture.md`)
 - Monorepo **pnpm workspaces** : `apps/api`, `apps/web`, `packages/shared`, `infra/`, `docs/`.
@@ -24,7 +24,6 @@ indiquées **à la demande** (ne charge pas tout d'un coup).
 ```bash
 pnpm install
 docker compose up -d neo4j                      # base locale
-docker compose --profile restore run --rm neo4j-restore   # restaure le dump (voir docs/08-devops.md)
 pnpm --filter @bp/api seed                      # données de démo
 pnpm dev                                        # api + web en parallèle
 pnpm lint && pnpm typecheck && pnpm test        # à lancer avant chaque commit
@@ -58,8 +57,8 @@ docker compose -f docker-compose.prod.yml config   # valider le compose de prod
    statut sont définies une seule fois dans `packages/shared` et réutilisées partout.
 5. **Un changement de statut = un `StatusEvent` immuable.** Ne modifie jamais un événement existant.
 6. **Neo4j n'est jamais exposé publiquement** (ni 7474, ni 7687) en production.
-7. **Avant de coder, inspecte le dump réel** (labels, propriétés, relations) et adapte les
-   noms de `docs/04-data-model-neo4j.md` si besoin. Le dump fait foi sur le schéma existant.
+7. **Le schéma de référence est `docs/04-data-model-neo4j.md`** (base : figure 1 du sujet). Toute modification
+   du schéma passe par une migration dans `apps/api/src/db/migrations/` et une mise à jour de `docs/04`.
 8. **Si une consigne est ambiguë ou si tu dois faire un choix qui n'est pas documenté, pose
    la question avant d'implémenter**, puis consigne la décision dans `docs/decisions/`.
 9. Les propositions de l'équipe (statut `Archived`, durées d'archivage, seuils) sont des

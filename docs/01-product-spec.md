@@ -105,5 +105,5 @@ Voir `docs/03-archive-rules.md` pour le détail. Critères :
 | `BP-DEMO-005` → `BP-DEMO-006` | 005 `Archived/SUPERSEDED`, 006 `Reused` dérivé de 005 | Filiation (US-08) |
 | `BP-DEMO-007` | `Archived/RECYCLED`, échéance dépassée (date de démo) | US-09 |
 
-Le seed réutilise les nœuds `Model`, `Type`, `Company`, `EconomicOperator` **déjà présents dans le dump**
+Aucun dump n'est fourni : le seed crée **tout le graphe** (`Company`, `Type`, `Model` et ses nœuds statiques, `EconomicOperator`)
 et crée les `BatteryInstance`, `Module`, `User`, etc. Il doit être idempotent (relançable sans doublons).

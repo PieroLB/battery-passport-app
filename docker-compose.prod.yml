@@ -44,20 +44,6 @@ services:
       retries: 12
     # NO published port: Neo4j stays on the internal Docker network.
 
-  neo4j-restore:
-    image: neo4j:${NEO4J_IMAGE_TAG:-5-community}
-    profiles: [restore]
-    volumes: [neo4j_data:/data, ./neo4j/dump:/dump:ro]
-    entrypoint:
-      [
-        'neo4j-admin',
-        'database',
-        'load',
-        'neo4j',
-        '--from-path=/dump',
-        '--overwrite-destination=true',
-      ]
-
 volumes:
   caddy_data:
   caddy_config:

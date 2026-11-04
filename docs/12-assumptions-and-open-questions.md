@@ -11,7 +11,7 @@
 | H6 | VPS | Debian/Ubuntu, ≥ 2 Go de RAM, accès SSH par clé, Docker installable | Ajuster mémoire Neo4j et procédure |
 | H7 | Reverse proxy | Caddy dans le compose, HTTPS automatique | Si Nginx/Traefik déjà présent sur le VPS, adapter |
 | H8 | Domaine | Un nom de domaine pointe vers le VPS (**HTTPS requis** pour la caméra du scanner sur mobile) | Démo mobile impossible sans HTTPS |
-| H9 | Neo4j | Édition Community, image `neo4j:5-community`, une seule base | Aligner sur la version réelle du dump |
+| H9 | Neo4j | Édition Community, image `neo4j:5-community`, une seule base | Aucun dump : libre choix, on reste sur la 5 LTS |
 | H10 | Auth | Comptes seedés + JWT, pas de SSO | Hors périmètre PoC |
 | H11 | Notifications | In-app uniquement (polling 10 s), pas d'e-mail | Ajouter un service d'envoi |
 | H12 | Preuves de recyclage | Simulées (référence de certificat), pas de PDF/A réel | Ajouter génération/téléversement |
@@ -20,7 +20,7 @@
 | H15 | Rôle conformité | Rôle ajouté par l'équipe (non prévu par le sujet) | Retirer le rôle, la double validation devient propriétaire seul |
 
 ## Questions à trancher avant ou pendant T-00 (l'agent doit les poser s'il manque une réponse)
-1. **Version et origine du dump Neo4j** : version de Neo4j qui l'a produit (4.4 ? 5.x ?) et nom du fichier ?
+1. ~~Version et origine du dump Neo4j~~ → **tranché** : aucun dump fourni (ADR 0001).
 2. **Le VPS** : OS, RAM, existe-t-il déjà un reverse proxy ou des conteneurs sur les ports 80/443 ?
 3. **Domaine** : lequel, et le DNS pointe-t-il déjà vers le VPS ?
 4. **Dépôt GitHub** : organisation ou compte personnel ? Dépôt privé ou public (visibilité des images GHCR) ?
